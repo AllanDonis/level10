@@ -4,6 +4,7 @@
 
 #include "fileutil.h"
 
+
 // DIRECTIONS
 // Choose whether you are doing the 2D array or
 // the array of arrays.
@@ -52,7 +53,7 @@ char ** loadFileAA(char *filename, int *size)
 			printf("Array extended\n");
 		}
 	//   Allocate memory for the string (str).
-		char * str = malloc((strlen(string)+1) * sizeof(char));
+		char * str = malloc((strlen(string)+1) * sizeof(char *));
 
 	//   Copy each line into the string (use strcpy).
 		strcpy(str,string);
@@ -81,18 +82,43 @@ char (*loadFile2D(char *filename, int *size))[COLS]
 	}
 	
 	// TODO
-	// Allocate memory for an 2D array, using COLS as the width.
-	// Read the file line by line into a buffer.
-    //   Trim newline.
-	//   Expand array if necessary (realloc).
-	//   Copy each line from the buffer into the array (use strcpy).
-    // Close the file.
-	
-	// The size should be the number of entries in the array.
+	int capacity2d = 10;
 	*size = 0;
 	
+	// Allocate memory for an 2D array, using COLS as the width.
+	char (*arrays)[COLS] = malloc(capacity2d * sizeof(*arrays));
+
+	// Read the file line by line into a buffer.
+	char buffer[1000];
+
+	while(fgets(buffer,sizeof(buffer),in) != NULL){
+
+    //   Trim newline.
+		char *nl = strchr(buffer,'\n');
+        if(nl) *nl = '\0';
+
+	//   Expand array if necessary (realloc).
+		if (*size >= capacity2d){
+
+			capacity2d += 15;
+			char (*large2darr)[COLS] = realloc(arrays,capacity2d * sizeof(*arrays));
+
+			arrays = large2darr;
+
+			printf("2dArray extended\n");
+		}
+		//   Copy each line from the buffer into the array (use strcpy).
+		strcpy(arrays[*size],buffer);
+
+		// The size should be the number of entries in the array.
+		(*size)++;
+
+	}
+    // Close the file.
+	fclose(in);
+	
 	// Return pointer to the array.
-	return NULL;
+	return arrays;
 }
 
 // Search the array for the target string.
@@ -110,7 +136,11 @@ char * substringSearchAA(char *target, char **lines, int size)
 
 char * substringSearch2D(char *target, char (*lines)[COLS], int size)
 {
-    
+	for(int i = 0; i < size; i++){
+		if(strstr(lines[i],target) != NULL){
+			return lines[i];
+		}
+	}
     return NULL;
 }
 
@@ -124,5 +154,5 @@ void freeAA(char ** arr, int size)
 
 void free2D(char (*arr)[COLS])
 {
-
+	free(arr);	
 }
